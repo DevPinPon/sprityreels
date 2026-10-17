@@ -1,0 +1,30 @@
+name: Compile iOS catalog once with Apple tools
+on:
+  push:
+    branches: [codex/ios-assets-20261017]
+    paths:
+      - .github/workflows/compile-ios-assets.yml
+      - scripts/ios-assets.py
+      - ios/SprityReels/Assets.xcassets/**
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  assets:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            ios/SprityReels/Assets.xcassets
+            scripts/ios-assets.py
+          sparse-checkout-cone-mode: false
+      - run: python3 scripts/ios-assets.py compile ios/SprityReels/Assets.xcassets compiled-ios-assets
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sprityreels-apple-assets
+          path: compiled-ios-assets/
+          if-no-files-found: error
+          retention-days: 7
